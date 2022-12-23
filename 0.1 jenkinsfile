@@ -81,7 +81,7 @@ pipeline{
                 script {
                    sh """
                    pwd
-                   touch paul8
+                   touch paul7
 
                    """
                     
@@ -106,7 +106,7 @@ pipeline{
                    sh """
                    pwd
                    ls
-                   mkdir johnpaul8
+                   mkdir johnpaul6
 
                    """
        
