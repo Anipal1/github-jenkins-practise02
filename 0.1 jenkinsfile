@@ -9,6 +9,7 @@ pipeline{
                 script {
                    sh """
                    pwd
+                   ls
                    touch paul8
 
                    """
