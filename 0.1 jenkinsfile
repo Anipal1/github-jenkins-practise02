@@ -80,7 +80,7 @@ stage('Setup parameters') {
                 script {
                    sh """
                    pwd
-                   touch paul8
+                   touch paul
 
                    """
                     
@@ -104,7 +104,7 @@ stage('Setup parameters') {
                 script {
                    sh """
                    pwd
-                   mkdir johnpaul8
+                   mkdir johnpaul
 
                    """
        
