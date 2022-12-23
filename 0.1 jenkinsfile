@@ -3,7 +3,7 @@ pipeline{
     agent {
         label ("node1 || node2 || node3 || node4|| node5|| branch|| main || Jenkins-node || docker-agent || Jenkins-docker2 || preproduction || production") 
      }
-      triggers {
+   triggers {
         cron('H */4 * * 1-5')
     }
   options {
@@ -12,9 +12,9 @@ pipeline{
     timeout (time: 60, unit: 'MINUTES')
     timestamps()
    }
-     
     stages{
-       stage('Setup parameters') {
+
+stage('Setup parameters') {
             steps {
                 script {
                     properties([
@@ -74,30 +74,13 @@ pipeline{
                 }
             }
         }
-        
-    stage('SonarQube analysis') {
-            agent {
-                docker {
-                  image 'sonarsource/sonar-scanner-cli:4.7.0'
-                }
-               }
-               environment {
-        CI = 'true'
-        //  scannerHome = tool 'Sonar'
-        scannerHome='/opt/sonar-scanner'
-    }
-            steps{
-                withSonarQubeEnv('Sonar') {
-                    sh "${scannerHome}/bin/sonar-scanner"
-                }
-            }
-        }
+
         stage('clean'){
             steps{
                 script {
                    sh """
                    pwd
-                   touch paul7
+                   touch paul8
 
                    """
                     
@@ -121,8 +104,7 @@ pipeline{
                 script {
                    sh """
                    pwd
-                   ls
-                   mkdir johnpaul6
+                   mkdir johnpaul8
 
                    """
        
@@ -166,7 +148,7 @@ pipeline{
         }
 
     }
-   post {
+      post {
     
     success {
       slackSend (channel: '#development-alerts', color: 'good', message: "The job was successfull")
@@ -176,5 +158,6 @@ pipeline{
       slackSend (channel: '#development-alerts', color: '#FF0000', message: "FAILURE: The job was NOT successfull")
     }
 }      
+ 
 }
     
