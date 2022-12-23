@@ -1,9 +1,81 @@
 
 pipeline{
     agent {
-        label 'node4'
+        label ("node1 || node2 || node3 || node4|| node5|| branch|| main || Jenkins-node || docker-agent || Jenkins-docker2 || preproduction || production") 
+     }
+      triggers {
+        cron('H */4 * * 1-5')
     }
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '20'))
+    disableConcurrentBuilds()
+    timeout (time: 60, unit: 'MINUTES')
+    timestamps()
+   }
+     
     stages{
+       stage('Setup parameters') {
+            steps {
+                script {
+                    properties([
+                        parameters([
+                        
+                        choice(
+                            choices: ['Dev', 'Sanbox',  'Prod'], 
+                            name: 'Environment'                   
+                                ),
+
+                        choice(
+                            choices: ['E2E-TEST', 'SERVER-TEST',  'LOAD-TEST','SECURITY_TEST'], 
+                            name: 'QA_Environment'                   
+                                ),
+
+                        choice(
+                            choices: ['K8S', 'HELM',  'ARGOCD','DOCKER'], 
+                            name: 'DEPLOY_TOOL'                   
+                                ),                
+
+                        string(
+                            defaultValue: 'anipal-001',
+                            name: 'User',
+                          description: 'Required to enter your name',
+                            trim: true
+                            ),
+
+                        string(
+                            defaultValue: 's4User',
+                            name: 'DB-Tag',
+                            description: 'Required to enter the image tag',
+                            trim: true
+                            ),
+
+                        string(
+                            defaultValue: 's4User',
+                            name: 'UI-Tag',
+                            description: 'Required to enter the image tag',
+                            trim: true
+                            ),
+                           
+                        string(
+                            defaultValue: 's4User',
+                            name: 'WEATHER-Tag',
+                            description: 'Required to enter the image tag',
+                            trim: true
+                            ),
+                        string(
+                            defaultValue: 's4User',
+                            name: 'AUTH-Tag',
+                            description: 'Required to enter the image tag',
+                            trim: true
+                            ),
+
+                        ])
+                    ])
+                }
+            }
+        }
+    
+    
         stage('clean'){
             steps{
                 script {
