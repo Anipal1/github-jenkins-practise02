@@ -7,7 +7,7 @@ pipeline {
         cron('H */4 * * 1-5')
     }
   options {
-    buildDiscarder(logRotator(numToKeepStr: '10'))
+    buildDiscarder(logRotator(numToKeepStr: '20'))
     disableConcurrentBuilds()
     timeout (time: 60, unit: 'MINUTES')
     timestamps()
@@ -117,25 +117,25 @@ pipeline {
         }
 
 
-stage('build-dev') {
-            steps {
-                sh '''
-              cd UI
-docker build -t devopseasylearning2021/s4-ui:$UITag .
-cd -
-cd DB
-docker build -t devopseasylearning2021/s4-db:$DBTag .
-cd -
-cd auth 
-docker build -t devopseasylearning2021/s4-auth:$AUTHTag .
-cd -
-cd weather 
-docker build -t devopseasylearning2021/s4-weather:$WEATHERTag .
-cd -
+// stage('build-dev') {
+//             steps {
+//                 sh '''
+//               cd UI
+// docker build -t devopseasylearning2021/s4-ui:$UITag .
+// cd -
+// cd DB
+// docker build -t devopseasylearning2021/s4-db:$DBTag .
+// cd -
+// cd auth 
+// docker build -t devopseasylearning2021/s4-auth:$AUTHTag .
+// cd -
+// cd weather 
+// docker build -t devopseasylearning2021/s4-weather:$WEATHERTag .
+// cd -
 
-                '''
-            }
-        }               
+//                 '''
+//             }
+//         }               
 
 stage('build-sanbox') {
             steps {
