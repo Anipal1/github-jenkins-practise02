@@ -33,6 +33,7 @@ pipeline{
                 script {
                    sh """
                    pwd
+                   ls
                    mkdir johnpaul8
 
                    """
