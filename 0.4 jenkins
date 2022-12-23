@@ -230,7 +230,7 @@ stage('update helm charts-prod') {
 stage('wait for argocd') {
             steps {
                 sh '''
-                ls
+                ls -h
                 touch paul
                 pwd
                 '''
