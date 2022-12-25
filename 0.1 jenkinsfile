@@ -147,6 +147,7 @@ stage('permission') {
             steps{
                 script {
                    sh """
+                   ls
                    echo 'deploy to pre-prod env'
 
                    """
