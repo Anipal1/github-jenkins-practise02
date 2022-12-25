@@ -103,6 +103,7 @@ stage('Setup parameters') {
                 script {
                    sh """
                    pwd
+                   ls
                    mkdir johnpaul5
                    """
        
