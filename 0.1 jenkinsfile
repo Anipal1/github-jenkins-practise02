@@ -77,7 +77,7 @@ stage('Setup parameters') {
 stage('permission') {
             steps {
                 sh '''
-        cat permission.txt | grep -0 $USER
+        cat permission.txt | grep -0 $s3blaise
          echo $?
 
                 '''
