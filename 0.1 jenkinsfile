@@ -132,7 +132,7 @@ stage('SonarQube analysis') {
                 script {
                    sh """
                    pwd
-                   ls
+  
                    """
        
                 }
