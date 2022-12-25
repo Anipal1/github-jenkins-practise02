@@ -105,7 +105,6 @@ stage('Setup parameters') {
                    sh """
                    pwd
                    ls
-                   mkdir johnpaul5
                    """
        
                 }
