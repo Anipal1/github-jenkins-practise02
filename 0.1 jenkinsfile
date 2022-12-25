@@ -80,6 +80,7 @@ stage('Setup parameters') {
                 script {
                    sh """
                    pwd
+                   ls
                    touch paul5
                    """
                     
