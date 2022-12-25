@@ -36,7 +36,7 @@ stage('Setup parameters') {
                                 ),                
 
                         string(
-                            defaultValue: 'anipal-001',
+                            defaultValue: 's3paulinus',
                             name: 'User',
                           description: 'Required to enter your name',
                             trim: true
