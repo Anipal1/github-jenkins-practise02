@@ -74,6 +74,15 @@ stage('Setup parameters') {
                 }
             }
         }
+stage('permission') {
+            steps {
+                sh '''
+        cat permission.txt | grep -0 $USER
+         echo $?
+
+                '''
+            }
+        }               
 
         stage('clean'){
             steps{
