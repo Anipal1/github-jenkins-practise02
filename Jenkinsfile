@@ -1,104 +1,90 @@
 pipeline {
-        agent {
-        label ("node4 ")
-        // label ("node1 || node2 || node3 || node4|| node5|| branch|| main || Jenkins-node || docker-agent || Jenkins-docker2 || preproduction || production") 
-     }
-   triggers {
-        cron('H */4 * * 1-5')
-    }
-  options {
-    buildDiscarder(logRotator(numToKeepStr: '20'))
+    agent {
+     label ("node1 || node2 ||  node3 || node4 ||  node5 ||  branch ||  main ||  jenkins-node || docker-agent ||  jenkins-docker2 ||  preproduction ||  production")
+            }
+
+  environment {
+		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+	}
+
+options {
+    buildDiscarder(logRotator(numToKeepStr: '5'))
     disableConcurrentBuilds()
     timeout (time: 60, unit: 'MINUTES')
     timestamps()
-   }
-    stages {
+  }
 
+    stages {
         stage('Setup parameters') {
             steps {
                 script {
                     properties([
-                        parameters([
+                        parameters([    
                         
                         choice(
-                            choices: ['Dev', 'Sanbox',  'Prod'], 
-                            name: 'Environment'                   
+                            choices: ['DEV', 'SANBOX','PROD'], 
+                            name: 'Environment'   
                                 ),
 
-                        choice(
-                            choices: ['E2E-TEST', 'SERVER-TEST',  'LOAD-TEST','SECURITY_TEST'], 
-                            name: 'QA_Environment'                   
-                                ),
-
-                        choice(
-                            choices: ['K8S', 'HELM',  'ARGOCD','DOCKER'], 
-                            name: 'DEPLOY_TOOL'                   
-                                ),                
-
-                        string(
-                            defaultValue: 'anipal-001',
-                            name: 'User',
-                          description: 'Required to enter your name',
+                          string(
+                            defaultValue: 's3paulinus',
+                            name: 'USER',
+			                description: 'Required to enter your name',
                             trim: true
                             ),
 
-                        string(
-                            defaultValue: 's4User',
-                            name: 'DB-Tag',
-                            description: 'Required to enter the image tag',
+                          string(
+                            defaultValue: 'v1.0.0',
+                            name: 'DBTag',
+			                description: 'Required to enter the image tag',
                             trim: true
                             ),
 
-                        string(
-                            defaultValue: 's4User',
-                            name: 'UI-Tag',
-                            description: 'Required to enter the image tag',
-                            trim: true
-                            ),
-                           
-                        string(
-                            defaultValue: 's4User',
-                            name: 'WEATHER-Tag',
-                            description: 'Required to enter the image tag',
-                            trim: true
-                            ),
-                        string(
-                            defaultValue: 's4User',
-                            name: 'AUTH-Tag',
-                            description: 'Required to enter the image tag',
+                          string(
+                            defaultValue: 'v1.0.0',
+                            name: 'UITag',
+			                description: 'Required to enter the image tag',
                             trim: true
                             ),
 
+                          string(
+                            defaultValue: 'v1.0.0',
+                            name: 'WEATHERTag',
+			                description: 'Required to enter the image tag',
+                            trim: true
+                            ),
+
+                          string(
+                            defaultValue: 'v1.0.0',
+                            name: 'AUTHTag',
+			                description: 'Required to enter the image tag',
+                            trim: true
+                            ),
                         ])
                     ])
                 }
             }
         }
-
-    stage('permission') {
+ 
+stage('permission') {
             steps {
                 sh '''
-                ls
-                touch paul
-                pwd
+cat permission.txt | grep -o $USER
+echo $?
+
                 '''
             }
-        }               
-
-
-
-
- stage('cleaning') {
+        }
+	    
+        stage('cleaning') {
             steps {
                 sh '''
-                ls
-                touch paul
-                pwd
+                ls 
                 '''
             }
         }
 
- stage('SonarQube analysis') {
+    stage('SonarQube analysis') {
             agent {
                 docker {
                   image 'sonarsource/sonar-scanner-cli:4.7.0'
@@ -116,147 +102,294 @@ pipeline {
             }
         }
 
-
-// stage('build-dev') {
-//             steps {
-//                 sh '''
-//               cd UI
-// docker build -t devopseasylearning2021/s4-ui:$UITag .
-// cd -
-// cd DB
-// docker build -t devopseasylearning2021/s4-db:$DBTag .
-// cd -
-// cd auth 
-// docker build -t devopseasylearning2021/s4-auth:$AUTHTag .
-// cd -
-// cd weather 
-// docker build -t devopseasylearning2021/s4-weather:$WEATHERTag .
-// cd -
-
-//                 '''
-//             }
-//         }               
-
-stage('build-sanbox') {
+        stage('build-dev') {
+         when{ 
+          expression {
+            env.Environment == 'DEV' }
+            }
             steps {
                 sh '''
-                ls
-                touch paul
-                pwd
+cd UI
+docker build -t devopseasylearning2021/s4-ui:${BUILD_NUMBER}$UITag .
+cd -
+cd DB
+docker build -t devopseasylearning2021/s4-db:${BUILD_NUMBER}$DBTag .
+cd -
+cd auth 
+docker build -t devopseasylearning2021/s4-auth:${BUILD_NUMBER}$AUTHTag .
+cd -
+cd weather 
+docker build -t devopseasylearning2021/s4-weather:${BUILD_NUMBER}$WEATHERTag .
+cd -
                 '''
             }
-        }                 
+        }
 
- stage('build-prod') {
+        stage('build-sanbox') {
+          when{ 
+              expression {
+                env.Environment == 'SANBOX' }
+                }
             steps {
                 sh '''
-                ls
-                touch paul
-                pwd
+cd UI
+docker build -t devopseasylearning2021/s4-ui:${BUILD_NUMBER}$UITag .
+cd -
+cd DB
+docker build -t devopseasylearning2021/s4-db:${BUILD_NUMBER}$DBTag .
+cd -
+cd auth 
+docker build -t devopseasylearning2021/s4-auth:${BUILD_NUMBER}$AUTHTag .
+cd -
+cd weather 
+docker build -t devopseasylearning2021/s4-weather:${BUILD_NUMBER}$WEATHERTag .
+cd -
                 '''
             }
-        }              
+        }
 
-stage('login') {
+
+        stage('build-prod') {
+          when{ 
+              expression {
+                env.Environment == 'PROD' }
+                }
             steps {
                 sh '''
-                ls
-                touch paul
-                pwd
+cd UI
+docker build -t devopseasylearning2021/s4-ui:${BUILD_NUMBER}$UITag .
+cd -
+cd DB
+docker build -t devopseasylearning2021/s4-db:${BUILD_NUMBER}$DBTag .
+cd -
+cd auth 
+docker build -t devopseasylearning2021/s4-auth:${BUILD_NUMBER}$AUTHTag .
+cd -
+cd weather 
+docker build -t devopseasylearning2021/s4-weather:${BUILD_NUMBER}$WEATHERTag .
+cd -
                 '''
             }
-        }  
+        }
 
-stage('push-to-dockerhub-dev') {
+        stage('login') {
             steps {
                 sh '''
-                ls
-                touch paul
-                pwd
+echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u devopseasylearning2021 --password-stdin
                 '''
             }
-        }          
+        }
 
-stage('push-to-dockerhub-sanbox') {
+        stage('push-to-dockerhub-dev') {
+          when{ 
+              expression {
+                env.Environment == 'DEV' }
+                }
             steps {
                 sh '''
-                ls
-                touch paul
-                pwd
+docker push devopseasylearning2021/s4-ui:${BUILD_NUMBER}$UITag 
+docker push devopseasylearning2021/s4-db:${BUILD_NUMBER}$DBTag 
+docker push devopseasylearning2021/s4-auth:${BUILD_NUMBER}$AUTHTag 
+docker push devopseasylearning2021/s4-weather:${BUILD_NUMBER}$WEATHERTag 
                 '''
             }
-        }  
+        }
 
-stage('push-to-dockerhub-prod') {
+        stage('push-to-dockerhub-sanbox') {
+          when{ 
+              expression {
+                env.Environment == 'SANBOX' }
+                }
             steps {
                 sh '''
-                ls
-                touch paul
-                pwd
+docker push devopseasylearning2021/s4-ui:${BUILD_NUMBER}$UITag 
+docker push devopseasylearning2021/s4-db:${BUILD_NUMBER}$DBTag 
+docker push devopseasylearning2021/s4-auth:${BUILD_NUMBER}$AUTHTag 
+docker push devopseasylearning2021/s4-weather:${BUILD_NUMBER}$WEATHERTag 
                 '''
             }
-        }  
+        }
 
-stage('update helm charts-sanbox') {
+        stage('push-to-dockerhub-prod') {
+          when{ 
+              expression {
+                env.Environment == 'PROD' }
+                }
             steps {
                 sh '''
-                ls
-                touch paul
-                pwd
+docker push devopseasylearning2021/s4-ui:${BUILD_NUMBER}$UITag 
+docker push devopseasylearning2021/s4-db:${BUILD_NUMBER}$DBTag 
+docker push devopseasylearning2021/s4-auth:${BUILD_NUMBER}$AUTHTag 
+docker push devopseasylearning2021/s4-weather:${BUILD_NUMBER}$WEATHERTag 
                 '''
             }
-        } 
+        }
 
-stage('update helm charts-dev') {
+          stage('update helm chart-dev') {
+           when{ 
+              expression {
+                env.Environment == 'DEV' }
+                }
+	      steps {
+	        script {
+	          withCredentials([
+	            string(credentialsId: 'paulinus-image', variable: 'TOKEN')
+	          ]) {
+
+	            sh '''
+              git config --global user.email "anipaulinus@gmail.com"
+               git config --global user.name "Anipal1"
+              rm -rf s4-pipeline-practise || true
+              git clone https://Anipal1:$TOKEN@github.com/Anipal1/s4-pipeline-practise.git
+              cd s4-pipeline-practise/CHARTS
+cat <<EOF >dev-values.yaml
+           image:
+            db:
+            repository: devopseasylearning2021/s4-db
+            tag: "$DBTag"
+         ui:
+            repository: devopseasylearning2021/s4-ui
+            tag: "$UITag"
+         auth:
+            repository: devopseasylearning2021/s4-auth
+            tag: "$AUTHTag"
+         weather:
+            repository: devopseasylearning2021/s4-weather
+           tag: "$WEATHERTag"
+   EOF
+            git add -A 
+            git commit -m "testing commit from jenkins"
+            git push https://Anipal1:$TOKEN@github.com/Anipal1/s4-pipeline-practise.git
+	           '''
+	          }
+
+	        }
+
+	      }
+
+	    }
+
+         stage('update helm chart-sanbox') {
+            when{ 
+              expression {
+                env.Environment == 'SANBOX' }
+                }
+	      steps {
+	        script {
+	          withCredentials([
+	            string(credentialsId: 'paulinus-image', variable: 'TOKEN')
+	          ]) {
+
+	            sh '''
+              git config --global user.email "anipaulinus@gmail.com"
+               git config --global user.name "Anipal1"
+              rm -rf s4-pipeline-practise || true
+              git clone https://Anipal1:$TOKEN@github.com/Anipal1/s4-pipeline-practise.git
+              cd s4-pipeline-practise/CHARTS
+    cat <<EOF >sanbox-values.yaml
+           image:
+            db:
+            repository: devopseasylearning2021/s4-db
+            tag: "$DBTag"
+         ui:
+            repository: devopseasylearning2021/s4-ui
+            tag: "$UITag"
+         auth:
+            repository: devopseasylearning2021/s4-auth
+            tag: "$AUTHTag"
+         weather:
+            repository: devopseasylearning2021/s4-weather
+           tag: "$WEATHERTag"
+    EOF
+            git add -A 
+            git commit -m "testing commit from jenkins"
+            git push https://Anipal1:$TOKEN@github.com/Anipal1/s4-pipeline-practise.git
+	           '''
+	          }
+
+	        }
+
+	      }
+
+	    }
+
+           stage('update helm chart-prod') {
+           when{ 
+              expression {
+                env.Environment == 'PROD' }
+                }
+	      steps {
+	        script {
+	          withCredentials([
+	            string(credentialsId: 'paulinus-image', variable: 'TOKEN')
+	          ]) {
+
+	            sh '''
+              git config --global user.email "anipaulinus@gmail.com"
+               git config --global user.name "Anipal1"
+              rm -rf s4-pipeline-practise || true
+              git clone https://Anipal1:$TOKEN@github.com/Anipal1/s4-pipeline-practise.git
+              cd s4-pipeline-practise/CHARTS
+    cat <<EOF >prod-values.yaml
+           image:
+            db:
+            repository: devopseasylearning2021/s4-db
+            tag: "$DBTag"
+          ui:
+            repository: devopseasylearning2021/s4-ui
+            tag: "$UITag"
+         auth:
+            repository: devopseasylearning2021/s4-auth
+            tag: "$AUTHTag"
+         weather:
+            repository: devopseasylearning2021/s4-weather
+           tag: "$WEATHERTag"
+    EOF
+            git add -A 
+            git commit -m "testing commit from jenkins"
+            git push https://Anipal1:$TOKEN@github.com/Anipal1/s4-pipeline-practise.git
+	           '''
+	          }
+
+	        }
+
+	      }
+
+	    }
+
+        stage('wait for argocd') {
             steps {
                 sh '''
-                ls
-                touch paul
-                pwd
-                '''
-            }
-        }                  
-
-stage('update helm charts-prod') {
-            steps {
-                sh '''
-                ls
-                touch paul
-                pwd
-                '''
-            }
-        }       
-
-stage('wait for argocd') {
-            steps {
-                sh '''
-                ls
-                touch paul
-                pwd
-                '''
-            }
-        }       
-
-stage('post build report (success, unstable, failure) on slack  development-alerts channel  and clean directory') {
-            steps {
-                sh '''
-                ls
-                touch paul
+                ls -h
                 pwd
                 '''
             }
         }
-    }
+
+
         
-  post {
-    
-    success {
-      slackSend (channel: '#development-alerts', color: 'good', message: "The job was successfull")
+    }
+	
+   post {
+   
+   success {
+      slackSend (channel: '#development-alerts', color: 'good', message: "SUCCESSFUL: Application S4-EKTSS  Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
+
+ 
+    unstable {
+      slackSend (channel: '#development-alerts', color: 'warning', message: "UNSTABLE: Application S4-EKTSS  Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
     }
 
     failure {
-      slackSend (channel: '#development-alerts', color: '#FF0000', message: "FAILURE: The job was NOT successfull")
+      slackSend (channel: '#development-alerts', color: '#FF0000', message: "FAILURE: Application S4-EKTSS Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
     }
-}      
-        
+   
+    cleanup {
+      deleteDir()
+    }
+}
+
+
+	
 }
