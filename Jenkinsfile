@@ -360,7 +360,7 @@ cat <<EOF >dev-values.yaml
         stage('wait for argocd') {
             steps {
                 sh '''
-                ls 
+                ls -h
                 pwd
                 '''
             }
